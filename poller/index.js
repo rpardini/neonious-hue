@@ -91,7 +91,8 @@ async function mainAsync () {
     while (!interrupted) {
         let resp = null;
         try {
-            await wait(100); // let neonious breathe a little...
+            console.log("Sleeping...");
+            await wait(1000); // let neonious breathe...
             console.log("Polling Neonious...");
             resp = await axios.get(neoniousUrl, {timeout: 3000, httpAgent: keepAliveAgent});
         } catch (e) {
