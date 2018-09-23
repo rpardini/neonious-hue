@@ -2,26 +2,28 @@
 
 Sunday Morning Project: control **Philips Hue** lights using a **Neonious One** Technology Preview device (given out at JSConf.eu)
 
-The Neonious has some touch-enabled pins!
+The Neonious has some touch-enabled pins, to which I connect some wires; everyone _just loves_ the concept of touching some bare electrical wires, attached as if by a 4-year-old, to get the fucking kitchen lights on.
 
 - Neonious One: https://www.neonious.com/
 - TP version docs: https://www.neonious.com/TPManual
 - Poller uses hue-sdk to actually talk to Hue: https://www.npmjs.com/package/hue-sdk
 
+![Terrible handiwork](neonious/handiwork.jpg "Terrible handiwork")
+
 ## Control your Hue lights (with a huge lag...) using a Neonious One
 
-This is done in two parts, because the neonious I got does not have a way to
-make outbound requests. I dunno if this is a limitation of the TP or my own 
-ignorance.
+The neonious I got does not have a way to make outbound requests. 
+I dunno if this is a limitation of the TP or my own ignorance.
 
 To work around it, I use the neonious's web server to expose the data, and a
-separate, poller program (that should run under full Node.js) to actually
+separate, poller program (that should run under full Node.js or Docker) to actually
 control the lights.
 
 This of course causes everything to be very, very slow, and the CPU/energy
-usage of the Neonious to be very high.
+usage of the Neonious to be very high. Polling the neonious is far from ideal.
 
-Maybe when/if Neonious gets some request capabilities this can be done better.
+Maybe when/if Neonious gets some request/socket/whatever capabilities this can be done the opposite way 
+(eg, neonious sends requests to a server process that actually talks to Hue).
 
 ### Neonious script
 
@@ -44,8 +46,8 @@ Maybe when/if Neonious gets some request capabilities this can be done better.
 
 ### Docker
 
-Makes running the server/poller part easier.
-
+WTF. Why do I have to add Docker to everything?!
+But it does make running the server/poller part easier.
 Dont forget to set the `--env`'s according to above.
 
 ```bash
