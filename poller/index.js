@@ -62,8 +62,8 @@ async function mainAsync () {
         console.error("Error contacting Neonious", e.message, e.stack);
         process.exit(2);
     }
-    let currRed = !!resp.data.green;
-    let currGreen = !!resp.data.red;
+    let currRed = !!resp.data.red;
+    let currGreen = !!resp.data.green;
     console.log(`   \\--- Connection to Neonious initialized. Red initially ${currRed}, Green initially ${currGreen}`);
 
     console.log("Entering main loop...");
