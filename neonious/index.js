@@ -13,7 +13,7 @@ gpio.pins[gpio.BUTTON].on('fall', () => {
 let ledRedState = false, ledGreenState = false, jsonStatus = "{}";
 
 // Time in milliseconds for the debouncer functions
-const debounceTime = 200;
+const debounceTime = 500;
 
 // I call pin 25 the 'green pin' because it also makes the green LED light up
 const greenPin = gpio.pins[25];

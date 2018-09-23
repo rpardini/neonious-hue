@@ -1,5 +1,6 @@
 const hue = require('hue-sdk');
 const axios = require('axios');
+let keepAliveAgent = new require("http").Agent({keepAlive: true});
 
 let config = {
     "hueUser": process.env['HUE_USER'],
@@ -29,6 +30,22 @@ async function redChanged (now, before) {
 }
 
 async function mainAsync () {
+    // Interrupt handling, I'm ashamed.
+    let interruptCount = 0;
+    let interrupted = false;
+    let interruptHandler = function () {
+        console.log("SIGTERM or SIGINT received, dying.");
+        interrupted = true;
+        interruptCount++;
+        if (interruptCount > 2) {
+            console.error("Too many interrupts, force exit.");
+            process.exit(8);
+        }
+    };
+    process.on('SIGTERM', interruptHandler);
+    process.on('SIGINT', interruptHandler);
+
+
     // Check Hue and Lights config...
     let hueLights = null;
     console.log("--- Testing connection to Hue...");
@@ -57,34 +74,48 @@ async function mainAsync () {
     console.log("--- Initializing connection to Neonious...");
     let resp = null;
     try {
-        resp = await axios.get(neoniousUrl);
+        resp = await axios.get(neoniousUrl, {timeout: 10000, httpAgent: keepAliveAgent});
     } catch (e) {
         console.error("Error contacting Neonious", e.message, e.stack);
         process.exit(2);
     }
+
     let currRed = !!resp.data.red;
     let currGreen = !!resp.data.green;
+
     console.log(`   \\--- Connection to Neonious initialized. Red initially ${currRed}, Green initially ${currGreen}`);
 
     console.log("Entering main loop...");
 
     // Loop eternally polling Neonious and firing off the handler functions.
-    // noinspection InfiniteLoopJS
-    while (true) {
+    while (!interrupted) {
+        let resp = null;
         try {
-            let resp = await axios.get(neoniousUrl);
-            if (resp.data.green !== currGreen) {
+            await wait(100); // let neonious breathe a little...
+            console.log("Polling Neonious...");
+            resp = await axios.get(neoniousUrl, {timeout: 3000, httpAgent: keepAliveAgent});
+        } catch (e) {
+            console.error("Error polling neonious", e.message, e.stack);
+            await wait(5000);
+            console.log("Slept 5s, lets try again.");
+            continue;
+        }
+
+        try {
+
+            if (!!resp.data.green !== !!currGreen) {
                 await greenChanged(!!resp.data.green, !!currGreen);
                 currGreen = !!resp.data.green;
             }
 
-            if (resp.data.red !== currRed) {
+            if (!!resp.data.red !== !!currRed) {
                 await redChanged(!!resp.data.red, !!currRed);
                 currRed = !!resp.data.red;
             }
         } catch (e) {
-            console.error("Error polling neonious", e.message, e.stack);
+            console.error("Error handling touch ", e.message, e.reason);
         }
+
     }
 }
 
@@ -110,5 +141,8 @@ function setHueLightState (lightId, onOff) {
     });
 }
 
-
+// Wait func promisified.
+function wait (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
