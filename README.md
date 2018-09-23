@@ -42,3 +42,23 @@ Maybe when/if Neonious gets some request capabilities this can be done better.
     - `RED_LIGHT_ID`: the id for the 'red' light
     - `GREEN_LIGHT_ID`: the id for the 'green' light
 
+### Docker
+
+Makes running the server/poller part easier.
+
+Dont forget to set the `--env`'s according to above.
+
+```bash
+# Build docker image
+docker build -t neonious-hue:latest .
+```
+
+```bash
+# test run with:
+docker run --rm --name neonious-hue --interactive --tty --env HUE_USER=..token... neonios neonious-hue:latest
+```
+
+```bash
+# daemon run:
+# docker run --name neonious-hue --restart always --detach --env HUE_USER=..token... neonious-hue:latest
+```
